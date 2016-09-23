@@ -14,13 +14,13 @@ s.send("NICK {}\r\n".format(config.NICK).encode("utf-8"))
 s.send("JOIN {}\r\n".format(config.CHANNEL).encode("utf-8"))
 
 def chat(sock, msg):
-    sock.send("PRIVMSG #{} :{}".format(config.CHANNEL, msg))
+    sock.send("PRIVMSG {} :{}\r\n".format(config.CHANNEL, msg).encode("utf-8"))
 
 def ban(sock, user):
     chat(sock, ".ban {}".format(user))
 
 def timeout(sock, user, sec=600):
-    chat(sock, ".timeout {}".format(user, sec))
+    chat(sock, ".timeout {} {}".format(user, sec))
 
 while True:
     response = s.recv(1024).decode("utf-8")
@@ -29,8 +29,8 @@ while True:
     else:
         username = re.search(r"\w+", response).group(0)
         message = CHAT_MSG.sub("", response)
-        if username == config.NICK:
-            print("me: " + message)
-        else:
-            print(username + ": " + message)
+        print(username + ": " + message)
+        if message.strip() == "!timeout":
+            print("timing out user " + username)
+            timeout(s, username, 10)
     time.sleep(0.1)
